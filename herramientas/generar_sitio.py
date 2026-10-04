@@ -492,11 +492,27 @@ def barra_recuento(reposo):
 
 
 def chip_descarga(archivo, texto=None):
-    return ('<a class="boton boton-archivo" href="{href}" download title="{nombre}">'
+    """El boton de un documento.
+
+    Un PDF se abre en una pestaña nueva: el navegador lo muestra en su propio
+    visor y el aprendiz puede leerlo sin guardar nada. Los demas formatos
+    (ZIP, PPTX, DOCX, XLSX) no se pueden mostrar en el navegador, asi que esos
+    si se descargan.
+    """
+    es_pdf = archivo['nombre'].lower().endswith('.pdf')
+    if es_pdf:
+        modo = ' target="_blank" rel="noopener"'
+        titulo_html = 'Abrir {} en una pestaña nueva'.format(archivo['nombre'])
+        icono = SALIR
+    else:
+        modo = ' download'
+        titulo_html = 'Descargar {}'.format(archivo['nombre'])
+        icono = BAJAR
+    return ('<a class="boton boton-archivo" href="{href}"{modo} title="{titulo_html}">'
             '<span class="tipo">{tipo}</span><span>{titulo}</span>{icono}</a>').format(
-        href=url(archivo['ruta']), nombre=e(archivo['nombre']),
+        href=url(archivo['ruta']), modo=modo, titulo_html=e(titulo_html),
         tipo=e(archivo['etiqueta']), titulo=e(texto or archivo['titulo'][:46]),
-        icono=BAJAR)
+        icono=icono)
 
 
 def fila_guia(guia):
@@ -700,7 +716,9 @@ def pagina_fase(fase, fases, linea):
     p.append('<main><div class="contenedor">')
     p.append('<ul class="resultados" id="resultados"></ul>')
     for act in fase['actividades']:
-        if act['descripcion']:
+        # Con una sola actividad, la cabecera de la fase ya dice lo mismo; solo
+        # se repite aqui cuando hay varias y hay que distinguirlas.
+        if act['descripcion'] and len(fase['actividades']) > 1:
             p.append('<p class="descripcion-actividad">{}</p>'.format(e(act['descripcion'])))
         if act['guias']:
             p.append('<section data-bloque>')

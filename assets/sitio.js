@@ -56,8 +56,15 @@
       var li = document.createElement('li');
       var a = document.createElement('a');
       a.href = h.d.u;
-      a.target = '_blank';
-      a.rel = 'noopener';
+      // Un OVA y un PDF se ven en el navegador, asi que se abren en pestaña
+      // nueva. Lo demas no se puede mostrar: se descarga, sin dejar una
+      // pestaña en blanco detras.
+      if (h.d.k === 'OVA' || h.d.k === 'PDF') {
+        a.target = '_blank';
+        a.rel = 'noopener';
+      } else {
+        a.setAttribute('download', '');
+      }
       a.innerHTML = '<span class="tipo"></span><span class="que"></span><span class="donde"></span>';
       a.querySelector('.tipo').textContent = h.d.k;
       a.querySelector('.que').textContent = h.d.t;
