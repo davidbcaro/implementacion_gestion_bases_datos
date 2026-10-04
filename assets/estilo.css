@@ -1,0 +1,706 @@
+/* ============================================================================
+   Gestión de redes de datos — SENA 228183
+   Mundo visual: señalética institucional.
+   El sitio se compone como el directorio de una estación: bandas de zona a
+   sangre, numeral a escala de señal, y el buscador como control único.
+   ========================================================================= */
+
+@font-face {
+  font-family: 'Archivo';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('fonts/archivo-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  /* Marcas de señal */
+  --verde: #39a900;          /* verde SENA: la marca de identidad */
+  --verde-texto: #2e7d00;    /* el mismo verde, legible sobre papel (5.2:1) */
+  --amarillo: #fdc300;       /* lo activo, lo encontrado */
+  --azul-franja: #04324d;    /* campo institucional de la portada */
+  --niebla: #eaefed;         /* tinta clara sobre el azul de portada */
+
+  /* Muro */
+  --papel: #f2f5f1;
+  --panel: #ffffff;
+  --ink: #0a1710;
+  --ink-medio: #405146;
+  --ink-tenue: #566a5e;      /* 5.9:1 sobre papel: soporta texto pequeño */
+  --filete: #cbd4cc;
+  --filete-suave: #e2e8e2;
+
+  /* Tintas sobre fondos llenos */
+  --sobre-verde: #08210b;
+  --sobre-amarillo: #22190a;
+  --sobre-amarillo-suave: #5c4a08;
+
+  /* Campo de fase por defecto. Cada banda y cada cabecera de fase lo
+     sobreescribe con el color configurado en herramientas/generar_sitio.py,
+     junto con su tinta, su numeral y su versión apagada, todos derivados de
+     ese color. Estos valores solo entran si faltara el de la fase. */
+  --campo: var(--panel);
+  --campo-tinta: var(--ink);
+  --campo-suave: var(--ink-medio);
+  --campo-numeral: var(--verde-texto);
+  --campo-apagado: var(--papel);
+
+  --medida: 68ch;
+  --ancho: 1180px;
+  --franja: 52px;
+
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+html { scrollbar-color: var(--verde) var(--filete-suave); }
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--ink);
+  font-family: 'Archivo', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Superficies del navegador: también son del sistema de diseño. */
+::selection { background: var(--amarillo); color: var(--sobre-amarillo); }
+:focus-visible {
+  outline: 3px solid var(--amarillo);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--filete-suave); }
+::-webkit-scrollbar-thumb { background: var(--verde); border: 3px solid var(--filete-suave); }
+
+.contenedor { max-width: var(--ancho); margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); }
+.solo-lectores {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- 1. Franja */
+/* Identidad fija. Nunca se va: el aprendiz siempre sabe dónde está. */
+
+.franja {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--azul-franja);
+  border-bottom: 4px solid var(--verde);
+}
+
+.franja .contenedor {
+  height: var(--franja);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.franja-marca {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;            /* la barra tiene que poder encogerse en móvil */
+  text-decoration: none;
+  color: var(--niebla);
+  font-weight: 900;
+  font-size: 0.94rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.franja-marca .sigla {
+  flex: none;
+  color: var(--verde);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* El nombre del programa cede espacio antes que la sigla o el código: es lo
+   único de los tres que el aprendiz puede reconstruir por contexto. */
+.franja-marca .prog {
+  font-weight: 700;
+  color: var(--niebla);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.franja-codigo {
+  flex: none;
+  margin-left: auto;
+  padding-left: 10px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  color: var(--niebla);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------- 2. Buscador */
+/* El control único de la superficie. */
+
+.consulta {
+  position: sticky;
+  top: var(--franja);
+  z-index: 29;
+  background: var(--panel);
+  border-bottom: 1px solid var(--filete);
+}
+
+.consulta-caja { position: relative; display: flex; align-items: center; }
+
+.consulta input {
+  width: 100%;
+  height: clamp(64px, 9vw, 84px);
+  padding: 0 56px 0 52px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  caret-color: var(--verde-texto);
+  font-family: inherit;
+  font-size: clamp(1.05rem, 2.6vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.consulta input::placeholder { color: var(--ink-tenue); font-weight: 500; }
+
+/* Un solo tratamiento de foco: la regla inferior se enciende, como el renglón
+   activo de un tablero. Nada de recuadros de alarma. */
+.consulta input:focus { outline: none; }
+.consulta-caja {
+  border-bottom: 4px solid transparent;
+  transition: border-color 160ms ease-out;
+}
+
+.consulta-caja:focus-within { border-bottom-color: var(--amarillo); }
+
+.consulta .lupa {
+  position: absolute;
+  left: 14px;
+  color: var(--verde-texto);
+  pointer-events: none;
+  line-height: 0;
+}
+
+.consulta-limpiar {
+  position: absolute;
+  right: 10px;
+  display: none;
+  border: 0;
+  background: var(--verde);
+  color: var(--sobre-verde);
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.consulta-limpiar:hover { background: var(--amarillo); }
+.consulta.tiene-texto .consulta-limpiar { display: block; }
+
+/* Recuento: el programa siempre se ve finito y contable. */
+.recuento {
+  background: var(--papel);
+  border-bottom: 1px solid var(--filete);
+  color: var(--ink-tenue);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.recuento .contenedor { padding-top: 9px; padding-bottom: 9px; }
+.recuento b { color: var(--ink); font-weight: 900; }
+
+/* ------------------------------------------------------------ 3. El tablero */
+/* Cuatro bandas de zona a sangre. El color de cada una llega desde el marcado
+   en --campo (ver FASES en herramientas/generar_sitio.py); la tinta, el numeral
+   y el apagado se derivan de él, así que cambiar el color no rompe nada. */
+
+.tablero {
+  background: var(--papel);
+  display: flex;
+  flex-direction: column;
+}
+
+.banda {
+  display: block;
+  background: var(--campo);
+  color: var(--campo-tinta);
+  border-bottom: 4px solid var(--papel);
+  text-decoration: none;
+  transition: filter 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.banda-interior {
+  display: grid;
+  grid-template-columns: minmax(96px, 15%) 1fr auto;
+  align-items: center;
+  gap: clamp(14px, 3vw, 30px);
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: clamp(18px, 3vw, 30px) clamp(16px, 4vw, 32px);
+}
+
+.banda-interior > * { min-width: 0; }
+.banda-cuerpo { min-width: 0; overflow-wrap: break-word; }
+
+/* Una fase sin coincidencias no se borra: se apaga. La ausencia es el dato, y
+   el campo conserva su color para no perder la codificación justo cuando el
+   tablero está informando sobre ella. */
+.banda.apagada { background: var(--campo-apagado); }
+.banda.apagada .banda-numero,
+.banda.apagada .banda-flecha,
+.banda.apagada .cifras .coincide { color: var(--campo-suave); }
+
+.banda:last-of-type { border-bottom: 0; }
+.banda:hover, .banda:focus-visible { filter: brightness(0.955); }
+.banda:hover .banda-numero { color: var(--campo-tinta); }
+.banda:hover .banda-flecha { transform: translateX(6px); color: var(--campo-tinta); }
+
+.banda-numero {
+  font-size: clamp(3.4rem, 11vw, 7.5rem);
+  font-weight: 900;
+  line-height: 0.82;
+  letter-spacing: -0.04em;
+  color: var(--campo-numeral);
+  font-variant-numeric: tabular-nums;
+  transition: color 160ms ease-out;
+}
+
+.banda-nombre {
+  margin: 0 0 6px;
+  font-size: clamp(1.35rem, 3.6vw, 2.4rem);
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.banda-glosa {
+  margin: 0 0 10px;
+  max-width: 58ch;
+  color: var(--campo-suave);
+  font-size: 0.94rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+/* Cifras medidas: tipografía, no adorno. */
+.cifras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--campo-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.cifras b { color: var(--campo-tinta); font-weight: 900; font-size: 1rem; letter-spacing: 0; }
+.cifras .coincide { color: var(--verde-texto); }
+
+.banda-flecha {
+  color: var(--campo-numeral);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), color 160ms ease-out;
+  line-height: 0;
+}
+
+/* ---------------------------------------------- 4. Encabezado de fase/sección */
+
+.cabecera-fase {
+  background: var(--campo);
+  color: var(--campo-tinta);
+  padding: clamp(22px, 4vw, 40px) 0;
+  border-bottom: 4px solid var(--verde);
+}
+
+.migas {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--campo-suave);
+}
+
+.migas a { color: var(--campo-numeral); text-decoration: none; }
+.migas a:hover { color: var(--campo-tinta); text-decoration: underline; }
+
+.cabecera-fase .titular {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: clamp(14px, 3vw, 28px);
+}
+
+.cabecera-fase h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 5vw, 3rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.cabecera-fase .glosa {
+  margin: 12px 0 0;
+  max-width: var(--medida);
+  color: var(--campo-suave);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------- 5. Secciones */
+
+main { padding-bottom: 72px; }
+
+.rotulo {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin: 44px 0 0;
+  padding-bottom: 10px;
+  border-bottom: 4px solid var(--ink);
+}
+
+.rotulo h2 {
+  margin: 0;
+  font-size: clamp(1rem, 2.4vw, 1.25rem);
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rotulo .cuenta {
+  margin-left: auto;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-tenue);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Encabezado de grupo dentro de una sección: sustituye a la etiqueta repetida
+   sobre cada fila, que era el cejillo que el suelo de calidad prohíbe. */
+.rotulo-sub {
+  margin: 26px 0 0;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--filete);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-medio);
+}
+
+.rotulo-sub + .filas { border-top: 0; }
+
+/* La descripción de una actividad de proyecto, cuando una fase trae varias y
+   cada una necesita decir de qué se ocupa. */
+.descripcion-actividad {
+  margin: 14px 0 0;
+  max-width: var(--medida);
+  color: var(--ink-medio);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* ----------------------------------------------------------------- 6. Filas */
+/* Un directorio, no una rejilla de tarjetas. */
+
+.filas { border-top: 1px solid var(--filete); }
+
+.fila {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 0 18px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--filete);
+  background: var(--panel);
+}
+
+.fila-orden {
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--verde-texto);
+  font-variant-numeric: tabular-nums;
+  padding-top: 2px;
+}
+
+.fila-titulo {
+  margin: 0 0 4px;
+  font-size: 1.08rem;
+  font-weight: 800;
+  line-height: 1.28;
+  letter-spacing: -0.01em;
+}
+
+.fila-serie {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-tenue);
+}
+
+.fila-cuerpo { min-width: 0; }
+
+/* Fila que es en sí misma un destino. El verde queda reservado para «abrir
+   OVA», así que aquí la señal de ir es la flecha y el volcado a amarillo. */
+a.fila {
+  grid-template-columns: 62px 1fr auto;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  transition: background 140ms ease-out, color 140ms ease-out;
+}
+
+a.fila:hover, a.fila:focus-visible { background: var(--amarillo); color: var(--sobre-amarillo); }
+a.fila:hover .fila-orden, a.fila:focus-visible .fila-orden,
+a.fila:hover .fila-ir, a.fila:focus-visible .fila-ir { color: var(--sobre-amarillo); }
+a.fila:hover .fila-serie, a.fila:focus-visible .fila-serie { color: var(--sobre-amarillo-suave); }
+
+.fila-ir { color: var(--verde-texto); line-height: 0; transition: color 140ms ease-out; }
+
+/* Marcas de estado: lo ausente se dibuja igual que lo presente. */
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+  padding: 3px 9px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.marca-compartido { background: var(--filete-suave); color: var(--ink-medio); }
+.marca-sin-ova {
+  background: repeating-linear-gradient(
+    135deg, var(--filete-suave) 0 7px, transparent 7px 14px
+  );
+  color: var(--ink-medio);
+  box-shadow: inset 0 0 0 1px var(--filete);
+}
+
+/* --------------------------------------------------------------- 7. Acciones */
+
+.acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+  transition: background 140ms ease-out, color 140ms ease-out;
+}
+
+.boton-ova {
+  background: var(--verde);
+  color: var(--sobre-verde);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.boton-ova:hover, .boton-ova:focus-visible { background: var(--amarillo); color: var(--sobre-amarillo); }
+
+.boton-archivo {
+  background: var(--panel);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--filete);
+}
+
+.boton-archivo:hover, .boton-archivo:focus-visible {
+  background: var(--ink);
+  color: var(--papel);
+  box-shadow: none;
+}
+
+.boton-archivo:hover .tipo, .boton-archivo:focus-visible .tipo { color: var(--amarillo); }
+
+.tipo {
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: var(--verde-texto);
+}
+
+/* ------------------------------------------------------- 8. Resultados y vacío */
+
+.resultados { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--filete); }
+
+.resultados li { border-bottom: 1px solid var(--filete); }
+
+.resultados a {
+  display: grid;
+  grid-template-columns: 58px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 10px;
+  background: var(--panel);
+  text-decoration: none;
+  color: inherit;
+}
+
+.resultados a:hover, .resultados a:focus-visible { background: var(--amarillo); }
+.resultados a:hover .donde, .resultados a:focus-visible .donde { color: var(--sobre-amarillo-suave); }
+.resultados a:hover .tipo, .resultados a:focus-visible .tipo { color: var(--sobre-amarillo); }
+
+.resultados .que { font-weight: 800; font-size: 1.08rem; line-height: 1.3; }
+.resultados .donde {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-tenue);
+  text-align: right;
+}
+
+.resultados .mas {
+  padding: 12px 15px;
+  background: var(--panel);
+  color: var(--ink-medio);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.vacio {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--ink-medio);
+  font-weight: 700;
+}
+
+.vacio b { color: var(--ink); }
+.oculto { display: none !important; }
+
+/* ------------------------------------------------------------------ 9. Salidas */
+
+.salidas { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+
+/* --------------------------------------------------------------------- Pie */
+
+.pie {
+  margin-top: 56px;
+  background: var(--azul-franja);
+  border-top: 4px solid var(--verde);
+  color: var(--niebla);
+  padding: 26px 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.pie .contenedor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px 26px;
+}
+.pie b { color: var(--niebla); font-weight: 900; letter-spacing: 0.04em; }
+.pie .contenedor > span:nth-child(2) {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+}
+.pie .contenedor > span:last-child {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: center;
+}
+.pie-autor { display: inline-flex; align-items: center; gap: 8px; }
+.pie-github {
+  display: inline-flex;
+  color: var(--niebla);
+  line-height: 0;
+  text-decoration: none;
+  transition: color 140ms ease-out;
+}
+.pie-github:link,
+.pie-github:visited,
+.pie-github:hover,
+.pie-github:focus-visible { color: var(--niebla); }
+.pie-github svg { display: block; fill: currentColor; }
+
+/* ------------------------------------------------------------------- Móvil */
+
+@media (max-width: 700px) {
+  .banda-interior { grid-template-columns: minmax(58px, 20%) 1fr auto; row-gap: 8px; }
+  .banda-flecha svg { width: 22px; height: 22px; }
+  .boton { padding: 9px 12px; }
+  .boton-archivo > span:not(.tipo) { min-width: 0; }
+  .fila { grid-template-columns: 44px 1fr; }
+  a.fila { grid-template-columns: 44px 1fr auto; }
+  .fila-orden { font-size: 1.2rem; }
+  .fila > * { min-width: 0; }
+  .resultados a { grid-template-columns: 48px 1fr; }
+  .resultados .donde { grid-column: 2; text-align: left; }
+  .rotulo { flex-wrap: wrap; }
+  .rotulo .cuenta { margin-left: 0; width: 100%; }
+  .pie .contenedor { display: flex; flex-wrap: wrap; }
+  .pie .contenedor > span:nth-child(2) { order: 3; margin-left: auto; }
+  .pie .contenedor > span:last-child { order: 2; margin-left: 0; }
+}
+
+/* -------------------------------------------------------------- Movimiento */
+/* Un único momento autorizado: al filtrar, lo que sobrevive se asienta, como
+   un tablero de salidas que termina de girar. */
+
+@keyframes asentar {
+  from { opacity: 0; transform: translateY(-7px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.asienta { animation: asentar 340ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.banda.asienta  { animation-delay: 20ms; }
+.fila.asienta   { animation-delay: 30ms; }
+
+/* Bajo 420px el nombre del programa se retira entero: la sigla y el código ya
+   sostienen la lectura institucional, y una elipsis a media palabra no. */
+@media (max-width: 420px) {
+  .franja-marca .prog { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -1,0 +1,37 @@
+# ---------------------------------------------------------------------------
+#  Archivos comprimidos del material original
+#
+#  Se conservan en el disco local, pero no se publican: su contenido ya viaja
+#  descomprimido en las carpetas `ova/`, que es lo que el sitio necesita para
+#  abrirlos en el navegador. Publicarlos además duplicaría cientos de megas y
+#  el sitio superaría el límite de 1 GB de GitHub Pages.
+#
+#  Para regenerar las carpetas `ova/` desde estos paquetes:
+#      python herramientas/extraer_ovas.py
+# ---------------------------------------------------------------------------
+material.zip
+*.rar
+*.7z
+
+# Nota: los ZIP de contenido (CF*.zip y similares) SÍ se publican. Se comprobó
+# que guardan ~156 MB de anexos, instrumentos de evaluación y cronogramas en
+# Word que no existen sueltos en ningún otro lugar del repositorio, y el sitio
+# los enlaza como descarga. Excluirlos rompería esos enlaces y perdería ese
+# material.
+
+# Herramientas de impeccable para harnesses que no se usan en este proyecto.
+# Reinstalar con:  npx impeccable install
+.cursor/
+.grok/
+.codex/
+.claude/
+.impeccable/
+
+# Python
+__pycache__/
+*.pyc
+
+# Sistema
+Thumbs.db
+desktop.ini
+.DS_Store
